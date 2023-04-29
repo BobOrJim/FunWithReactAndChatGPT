@@ -9,22 +9,34 @@ import {
 import { useState } from "react";
 import { fetchChatGPT } from "./chatGPT";
 
-type Message = {
-  text: string;
-  isBot: boolean;
+export type Message = {
+  role: "user" | "assistant" | "system";
+  content: string;
 };
 
 function App() {
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [systemInstructions, setSystemInstructions] = useState<string>(
-    "Act as your talking to a dear friend who is mentally challanged",
-  );
+  const [systemMessage, setSystemMessage] = useState<Message>({
+    role: "system",
+    content: "Act as if your morgan freeman",
+  });
 
   async function handleSendPrompt() {
-    setMessages((prev) => [...prev, { text: prompt, isBot: false }]);
-    const response = await fetchChatGPT(prompt);
-    setMessages((prev) => [...prev, { text: response, isBot: true }]);
+    //setMessages((prev) => [...prev, { role: "user", content: prompt }]);
+    //setMessages([...messages, { role: "user", content: prompt }]);
+    //Raden ovan hinner inte köras innan await fetchChatGPT körs
+
+    setMessages((prev) => [...prev, { role: "user", content: prompt }]);
+
+    setTimeout(() => {
+      console.log("asdf");
+    }, 1000);
+
+    console.log("MEssages in handleSendPrompt", messages);
+
+    const newMessage = await fetchChatGPT([systemMessage, ...messages]);
+    setMessages((prev) => [...prev, newMessage]);
   }
 
   return (
@@ -53,11 +65,13 @@ function App() {
               sx={{
                 marginTop: "1rem",
                 width: "80%",
-                alignSelf: response.isBot ? "flex-start" : "flex-end",
-                backgroundColor: response.isBot ? "#e0e0e0" : "#b3e5fc",
+                alignSelf:
+                  response.role == "assistant" ? "flex-start" : "flex-end",
+                backgroundColor:
+                  response.role == "user" ? "#e0e0e0" : "#b3e5fc",
               }}
               key={index}
-              value={response.text}
+              value={response.content}
             />
           ))}
         </Box>
@@ -81,8 +95,10 @@ function App() {
 
           <FormLabel>System instruction:</FormLabel>
           <TextField
-            value={systemInstructions}
-            onChange={(e) => setSystemInstructions(e.target.value)}
+            value={systemMessage.content}
+            onChange={(e) =>
+              setSystemMessage({ role: "system", content: e.target.value })
+            }
           />
         </Box>
       </Box>
