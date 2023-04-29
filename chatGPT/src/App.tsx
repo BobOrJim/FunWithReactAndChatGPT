@@ -23,18 +23,8 @@ function App() {
   });
 
   async function handleSendPrompt() {
-    //setMessages((prev) => [...prev, { role: "user", content: prompt }]);
-    //setMessages([...messages, { role: "user", content: prompt }]);
-    //Raden ovan hinner inte köras innan await fetchChatGPT körs
-
     setMessages((prev) => [...prev, { role: "user", content: prompt }]);
-
-    setTimeout(() => {
-      console.log("asdf");
-    }, 1000);
-
-    console.log("MEssages in handleSendPrompt", messages);
-
+    //BUG: Raden ovan hinner inte köras, aka uppdata messages innan fetchChatGPT körs
     const newMessage = await fetchChatGPT([systemMessage, ...messages]);
     setMessages((prev) => [...prev, newMessage]);
   }
